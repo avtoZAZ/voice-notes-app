@@ -45,6 +45,7 @@
 
 ### Вариант 2: Сборка из исходного кода
 
+**На Linux/Mac:**
 ```bash
 # Клонируйте репозиторий
 git clone https://github.com/avtoZAZ/voice-notes-app.git
@@ -55,6 +56,19 @@ cd voice-notes-app
 
 # APK будет доступен по пути:
 # app/build/outputs/apk/debug/app-debug.apk
+```
+
+**На Windows:**
+```cmd
+REM Клонируйте репозиторий
+git clone https://github.com/avtoZAZ/voice-notes-app.git
+cd voice-notes-app
+
+REM Соберите APK
+gradlew.bat assembleDebug
+
+REM APK будет доступен по пути:
+REM app\build\outputs\apk\debug\app-debug.apk
 ```
 
 ## 🛠️ Разработка
@@ -100,6 +114,7 @@ app/src/main/java/com/avtozaz/voicenotes/
 
 ### Сборка проекта
 
+**На Linux/Mac:**
 ```bash
 # Отладочная сборка
 ./gradlew assembleDebug
@@ -112,6 +127,21 @@ app/src/main/java/com/avtozaz/voicenotes/
 
 # Установка на подключенное устройство
 ./gradlew installDebug
+```
+
+**На Windows:**
+```cmd
+REM Отладочная сборка
+gradlew.bat assembleDebug
+
+REM Релизная сборка
+gradlew.bat assembleRelease
+
+REM Запуск тестов
+gradlew.bat test
+
+REM Установка на подключенное устройство
+gradlew.bat installDebug
 ```
 
 ## 🚀 Использование

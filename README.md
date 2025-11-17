@@ -45,6 +45,7 @@ The app follows Nothing's minimalist design language:
 
 ### Option 2: Build from Source
 
+**On Linux/Mac:**
 ```bash
 # Clone the repository
 git clone https://github.com/avtoZAZ/voice-notes-app.git
@@ -55,6 +56,19 @@ cd voice-notes-app
 
 # The APK will be available at:
 # app/build/outputs/apk/debug/app-debug.apk
+```
+
+**On Windows:**
+```cmd
+REM Clone the repository
+git clone https://github.com/avtoZAZ/voice-notes-app.git
+cd voice-notes-app
+
+REM Build the APK
+gradlew.bat assembleDebug
+
+REM The APK will be available at:
+REM app\build\outputs\apk\debug\app-debug.apk
 ```
 
 ## 🛠️ Development
@@ -100,6 +114,7 @@ app/src/main/java/com/avtozaz/voicenotes/
 
 ### Building the Project
 
+**On Linux/Mac:**
 ```bash
 # Debug build
 ./gradlew assembleDebug
@@ -112,6 +127,21 @@ app/src/main/java/com/avtozaz/voicenotes/
 
 # Install on connected device
 ./gradlew installDebug
+```
+
+**On Windows:**
+```cmd
+REM Debug build
+gradlew.bat assembleDebug
+
+REM Release build
+gradlew.bat assembleRelease
+
+REM Run tests
+gradlew.bat test
+
+REM Install on connected device
+gradlew.bat installDebug
 ```
 
 ## 🚀 Usage
