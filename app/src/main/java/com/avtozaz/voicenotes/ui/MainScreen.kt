@@ -95,14 +95,15 @@ fun MainScreen(
                                 note = note,
                                 onComplete = {
                                     isVisible = false
-                                    kotlinx.coroutines.DelayKt
-                                    // Delay deletion to allow animation to finish
-                                    androidx.compose.runtime.LaunchedEffect(Unit) {
-                                        kotlinx.coroutines.delay(300)
-                                        onCompleteNote(note)
-                                    }
                                 }
                             )
+                        }
+
+                        LaunchedEffect(isVisible) {
+                            if (!isVisible) {
+                                kotlinx.coroutines.delay(300)
+                                onCompleteNote(note)
+                            }
                         }
                     }
                 }
