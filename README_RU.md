@@ -64,7 +64,10 @@ cd voice-notes-app
 - Android Studio Hedgehog или новее
 - JDK 17
 - Android SDK 34
-- Gradle 8.1+
+- Gradle 8.2+
+- Доступ к Google Maven Repository (dl.google.com)
+
+**Примечание**: Для сборки проекта требуется доступ к Maven-репозиторию Google для загрузки Android Gradle Plugin и зависимостей. Если вы находитесь в сети с ограничениями, GitHub Actions автоматически выполнит сборку при отправке изменений в репозиторий.
 
 ### Технологический стек
 
