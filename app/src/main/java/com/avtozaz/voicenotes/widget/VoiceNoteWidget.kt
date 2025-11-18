@@ -31,8 +31,8 @@ class VoiceNoteWidget : AppWidgetProvider() {
         
         when (intent.action) {
             ACTION_START_RECORDING -> {
-                // Start recording via service (hold mode since it's triggered by widget)
-                VoiceRecordingService.startRecording(context, VoiceRecordingService.MODE_HOLD)
+                // Start recording via service (VAD mode for widget - auto-stops on silence)
+                VoiceRecordingService.startRecording(context, VoiceRecordingService.MODE_VAD)
             }
             ACTION_STOP_RECORDING -> {
                 // Stop recording
