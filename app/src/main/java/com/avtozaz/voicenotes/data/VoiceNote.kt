@@ -9,5 +9,6 @@ data class VoiceNote(
     val id: Long = 0,
     val text: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
+    val audioFilePath: String? = null
 )
