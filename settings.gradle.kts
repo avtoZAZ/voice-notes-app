@@ -6,5 +6,12 @@ pluginManagement {
     }
 }
 
-rootProject.name = "VoiceNotes"
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "voice-notes-app"
 include(":app")
