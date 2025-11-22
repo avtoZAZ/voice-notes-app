@@ -6,17 +6,24 @@ This is a complete Android application for voice notes with speech-to-text funct
 ## Key Features Implemented
 
 ### Core Functionality
-1. **Voice Recording**: Tap the floating microphone button to record
-2. **Speech-to-Text**: Automatic conversion using Android's SpeechRecognizer API
-3. **Notes List**: View all notes in a scrollable list
-4. **Complete Notes**: Mark notes as done with smooth fade-out animation
-5. **Home Screen Widget**: Quick access widget for instant recording
+1. **Voice Recording with Dual Modes**:
+   - **Single Tap Mode**: Records until silence detected (Voice Activity Detection)
+   - **Long Press Mode**: Records while button is held
+2. **Audio Recording**: MediaRecorder API saves .3gp audio files to internal storage
+3. **Speech-to-Text**: Automatic conversion using Android's SpeechRecognizer API
+4. **Notes List**: View all notes in a scrollable list with timestamps
+5. **Complete Notes**: Mark notes as done with smooth fade-out animation
+6. **Home Screen Widget**: Circular red button widget for instant recording
+   - Records without opening app
+   - Uses Voice Activity Detection for auto-stop
+7. **Background Recording**: Foreground service with notification during recording
 
 ### Design (Nothing Style)
 - Black background (#0A0A0A)
 - Dark gray cards (#1A1A1A, #2A2A2A)  
 - Red accent (#FF0000) for interactive elements
-- Pulsing record button animation
+- Pulsing record button animation during recording
+- Circular widget button (80dp) with white mic icon
 - Smooth fade animations for note completion
 - Minimalist Roboto font
 
@@ -26,28 +33,37 @@ This is a complete Android application for voice notes with speech-to-text funct
 - **Model**: VoiceNote data class with Room database
 - **View**: Jetpack Compose UI (MainScreen.kt)
 - **ViewModel**: NoteViewModel managing state and database operations
+- **Service**: VoiceRecordingService for background recording
 
 #### Data Layer (Room Database)
-- **VoiceNote Entity**: id, text, timestamp, isCompleted
+- **VoiceNote Entity**: id, text, timestamp, isCompleted, audioFilePath
 - **NoteDao**: CRUD operations with Flow for reactive updates
-- **NoteDatabase**: Singleton Room database instance
+- **NoteDatabase**: Singleton Room database instance (version 2)
+- **Migration**: Destructive migration for development simplicity
 
 #### UI Layer (Jetpack Compose)
 - **MainScreen**: Main UI with notes list and FAB
 - **NoteCard**: Individual note item with text and complete button
-- **RecordButton**: Animated floating action button
+- **RecordButton**: Animated FAB with gesture detection for tap/long-press
 - **Theme**: Material3 dark theme with Nothing colors
 
-#### Speech Recognition
-- Android SpeechRecognizer API
-- Russian language support ("ru-RU")
-- Permission handling for RECORD_AUDIO
-- Real-time speech-to-text conversion
+#### Recording Service (VoiceRecordingService)
+- **Foreground Service**: Runs in background with notification
+- **MediaRecorder**: Records audio to .3gp files
+- **SpeechRecognizer**: Converts speech to text
+- **Voice Activity Detection**: Monitors amplitude to detect silence
+  - Threshold: 500 (amplitude)
+  - Duration: 15 checks (~1.5 seconds of silence)
+- **Two Modes**:
+  - MODE_VAD (0): Auto-stops on silence detection
+  - MODE_HOLD (1): Stops when release signal received
 
-#### Widget
-- Simple home screen widget
-- Launches app on tap
-- Red button design matching app theme
+#### Widget (VoiceNoteWidget)
+- **AppWidgetProvider**: Handles widget lifecycle
+- **Circular Button**: 80dp red circle with white mic icon
+- **PendingIntent**: Broadcasts recording action
+- **No App Launch**: Records directly from home screen
+- **Auto-stop**: Uses VAD mode for automatic termination
 
 ## Project Structure
 
@@ -61,22 +77,24 @@ voice-notes-app/
 │   └── src/main/
 │       ├── AndroidManifest.xml
 │       ├── java/com/avtozaz/voicenotes/
-│       │   ├── MainActivity.kt         # Main activity with speech recognition
+│       │   ├── MainActivity.kt         # Main activity with recording modes
 │       │   ├── data/
-│       │   │   ├── VoiceNote.kt       # Data entity
+│       │   │   ├── VoiceNote.kt       # Data entity with audioFilePath
 │       │   │   ├── NoteDao.kt         # Room DAO
-│       │   │   └── NoteDatabase.kt    # Room database
+│       │   │   └── NoteDatabase.kt    # Room database (v2)
+│       │   ├── service/
+│       │   │   └── VoiceRecordingService.kt  # Foreground recording service
 │       │   ├── ui/
-│       │   │   ├── MainScreen.kt      # Compose UI
+│       │   │   ├── MainScreen.kt      # Compose UI with gesture detection
 │       │   │   └── theme/
 │       │   │       ├── Color.kt       # App colors
 │       │   │       └── Theme.kt       # Material3 theme
 │       │   ├── viewmodel/
 │       │   │   └── NoteViewModel.kt   # ViewModel
 │       │   └── widget/
-│       │       └── VoiceNoteWidget.kt # Home screen widget
+│       │       └── VoiceNoteWidget.kt # Widget with recording action
 │       └── res/
-│           ├── drawable/              # Icon assets
+│           ├── drawable/              # Icon assets (mic icon, widget bg)
 │           ├── layout/                # Widget layout
 │           ├── mipmap-*/              # Launcher icons (all densities)
 │           ├── values/                # Strings, colors, themes
@@ -130,6 +148,8 @@ voice-notes-app/
 ### Permissions Required
 - RECORD_AUDIO: For voice recording
 - INTERNET: For speech recognition service
+- FOREGROUND_SERVICE: For background recording service
+- POST_NOTIFICATIONS: For recording notification (Android 13+)
 
 ## GitHub Actions Workflow
 
@@ -150,8 +170,12 @@ Triggered on:
 1. Download APK from GitHub Actions artifacts
 2. Install on Android device (enable "Unknown Sources")
 3. Grant microphone permission when prompted
-4. Tap red microphone button to record
-5. Speak your note
+4. **In-App Recording**:
+   - Single tap: Records until silence detected
+   - Long press: Records while button is held
+5. **Widget Recording**:
+   - Add widget to home screen
+   - Tap widget button to record (auto-stops on silence)
 6. Tap checkmark to complete/delete note
 
 ### For Developers
@@ -164,15 +188,18 @@ Triggered on:
 ## Limitations & Notes
 
 1. **Network Access**: Build requires access to Google's Maven repository (dl.google.com)
-2. **Language**: Currently configured for Russian ("ru-RU"), can be changed in MainActivity
+2. **Language**: Currently configured for Russian ("ru-RU"), can be changed in VoiceRecordingService
 3. **Speech Recognition**: Requires Google services on device
-4. **Storage**: All data stored locally in Room database
-5. **Widget**: Basic implementation, launches app on tap
+4. **Storage**: All data and audio files stored locally in app's internal storage
+5. **Widget**: Records directly without opening app, uses VAD for auto-stop
+6. **VAD Sensitivity**: Silence threshold and duration can be tuned in VoiceRecordingService
+7. **Audio Format**: Saves as .3gp files (AMR_NB codec) for small file size
 
 ## Future Enhancements (Not Implemented)
 
 Potential improvements:
-- Multiple language support
+- Multiple language support / language selection
+- Audio playback from saved files
 - Export notes to file
 - Cloud sync
 - Note editing

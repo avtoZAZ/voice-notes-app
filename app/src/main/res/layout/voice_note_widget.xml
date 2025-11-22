@@ -2,17 +2,17 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_gray"
     android:padding="8dp">
 
-    <Button
+    <ImageButton
         android:id="@+id/widget_button"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_gravity="center"
-        android:background="@color/red_accent"
-        android:text="@string/quick_record"
-        android:textColor="@color/white"
-        android:textSize="14sp" />
+        android:background="@drawable/widget_button_background"
+        android:src="@drawable/ic_mic"
+        android:scaleType="centerInside"
+        android:contentDescription="@string/record_voice"
+        android:padding="16dp" />
 
 </FrameLayout>

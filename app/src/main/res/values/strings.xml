@@ -4,8 +4,10 @@
     <string name="record_voice">Record voice note</string>
     <string name="mark_complete">Mark as complete</string>
     <string name="widget_name">Voice Note Widget</string>
-    <string name="widget_description">Quick voice note recording</string>
+    <string name="widget_description">Quick voice note recording - Tap to record, stops on silence</string>
     <string name="quick_record">Quick Record</string>
     <string name="permission_required">Microphone permission required</string>
     <string name="permission_denied">Permission denied. Please grant microphone permission in settings.</string>
+    <string name="recording_mode_vad">Single tap: Records until silence</string>
+    <string name="recording_mode_hold">Long press: Record while held</string>
 </resources>

@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.avtozaz.voicenotes.service.VoiceRecordingService
 import com.avtozaz.voicenotes.ui.MainScreen
 import com.avtozaz.voicenotes.ui.theme.VoiceNotesTheme
 import com.avtozaz.voicenotes.viewmodel.NoteViewModel
@@ -28,7 +29,7 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            startVoiceRecognition()
+            // Permission granted, will be used when starting recording
         } else {
             Toast.makeText(
                 this,
@@ -57,11 +58,14 @@ class MainActivity : ComponentActivity() {
                 MainScreen(
                     notes = notes,
                     onRecordClick = {
-                        if (isRecording) {
-                            stopVoiceRecognition()
-                        } else {
-                            checkPermissionAndRecord()
-                        }
+                        checkPermissionAndRecord(VoiceRecordingService.MODE_VAD)
+                    },
+                    onRecordLongPress = {
+                        checkPermissionAndRecord(VoiceRecordingService.MODE_HOLD)
+                    },
+                    onRecordRelease = {
+                        VoiceRecordingService.stopRecording(this)
+                        isRecording = false
                     },
                     onCompleteNote = { note ->
                         noteViewModel?.completeNote(note)
@@ -72,13 +76,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun checkPermissionAndRecord() {
+    private fun checkPermissionAndRecord(mode: Int) {
         when {
             ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.RECORD_AUDIO
             ) == PackageManager.PERMISSION_GRANTED -> {
-                startVoiceRecognition()
+                startVoiceRecording(mode)
             }
             else -> {
                 requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
@@ -86,90 +90,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun startVoiceRecognition() {
-        if (speechRecognizer == null) {
-            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
-            speechRecognizer?.setRecognitionListener(recognitionListener)
-        }
-
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            )
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-        }
-
+    private fun startVoiceRecording(mode: Int) {
         isRecording = true
-        speechRecognizer?.startListening(intent)
-    }
-
-    private fun stopVoiceRecognition() {
-        isRecording = false
-        speechRecognizer?.stopListening()
-    }
-
-    private val recognitionListener = object : RecognitionListener {
-        override fun onReadyForSpeech(params: Bundle?) {
-            // Ready to record
-        }
-
-        override fun onBeginningOfSpeech() {
-            // User started speaking
-        }
-
-        override fun onRmsChanged(rmsdB: Float) {
-            // Volume changed
-        }
-
-        override fun onBufferReceived(buffer: ByteArray?) {
-            // Buffer received
-        }
-
-        override fun onEndOfSpeech() {
-            isRecording = false
-        }
-
-        override fun onError(error: Int) {
-            isRecording = false
-            val errorMessage = when (error) {
-                SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
-                SpeechRecognizer.ERROR_CLIENT -> "Client side error"
-                SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Insufficient permissions"
-                SpeechRecognizer.ERROR_NETWORK -> "Network error"
-                SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
-                SpeechRecognizer.ERROR_NO_MATCH -> "No speech match"
-                SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognition service busy"
-                SpeechRecognizer.ERROR_SERVER -> "Server error"
-                SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech input"
-                else -> "Unknown error"
-            }
-            
-            if (error != SpeechRecognizer.ERROR_NO_MATCH && 
-                error != SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
-                Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        override fun onResults(results: Bundle?) {
-            isRecording = false
-            val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-            if (!matches.isNullOrEmpty()) {
-                val recognizedText = matches[0]
-                if (recognizedText.isNotBlank()) {
-                    noteViewModel?.addNote(recognizedText)
-                }
-            }
-        }
-
-        override fun onPartialResults(partialResults: Bundle?) {
-            // Partial results available
-        }
-
-        override fun onEvent(eventType: Int, params: Bundle?) {
-            // Reserved for future events
-        }
+        VoiceRecordingService.startRecording(this, mode)
     }
 
     override fun onDestroy() {

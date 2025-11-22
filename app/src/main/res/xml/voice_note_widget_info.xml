@@ -3,7 +3,7 @@
     android:description="@string/widget_description"
     android:initialLayout="@layout/voice_note_widget"
     android:minWidth="110dp"
-    android:minHeight="40dp"
+    android:minHeight="110dp"
     android:previewImage="@drawable/widget_preview"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"

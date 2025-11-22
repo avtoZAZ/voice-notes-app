@@ -13,15 +13,22 @@ A minimalist voice notes application for Android with speech-to-text functionali
 
 ## ✨ Features
 
-- 🎤 **Voice Recording** - Quick voice recording with a single tap
+- 🎤 **Voice Recording with Two Modes**:
+  - **Single Tap**: Records until silence is detected (Voice Activity Detection)
+  - **Long Press**: Records while button is held, stops when released
+- 🎙️ **MediaRecorder Integration** - High-quality audio recording saved to device
 - 🗣️ **Speech-to-Text** - Automatic conversion of speech to text using Android's built-in speech recognition
 - 📝 **Notes List** - View all your voice notes in a clean, organized list
 - ✅ **Complete Notes** - Mark notes as complete with a smooth fade-out animation
 - 🎨 **Nothing-Inspired Design** - Minimalist black background with red accents
 - 🔴 **Pulsing Record Button** - Animated microphone button indicates active recording
 - 🇷🇺 **Russian Language Support** - Native support for Russian speech recognition
-- 📱 **Home Screen Widget** - Quick access widget for instant note recording
-- 💾 **Local Storage** - All notes stored locally using Room database
+- 📱 **Home Screen Widget** - Circular red button widget for instant recording from home screen
+  - Tap widget to start recording
+  - Automatically stops when silence is detected
+  - Records without opening the app
+- 💾 **Local Storage** - All notes and audio files stored locally using Room database
+- 🔔 **Foreground Service** - Reliable recording with notification during capture
 
 ## 🎨 Design Philosophy
 
@@ -91,25 +98,29 @@ REM app\build\outputs\apk\debug\app-debug.apk
 - **Database**: Room
 - **Async**: Kotlin Coroutines & Flow
 - **Speech Recognition**: Android SpeechRecognizer API
+- **Audio Recording**: Android MediaRecorder API
+- **Background Processing**: Foreground Service
 
 ### Project Structure
 
 ```
 app/src/main/java/com/avtozaz/voicenotes/
-├── MainActivity.kt              # Main activity with speech recognition
+├── MainActivity.kt              # Main activity with recording coordination
 ├── ui/
-│   ├── MainScreen.kt           # Compose UI screens
+│   ├── MainScreen.kt           # Compose UI with dual recording modes
 │   └── theme/
-│       ├── Color.kt            # App colors
+│       ├── Color.kt            # App colors (Nothing style)
 │       └── Theme.kt            # Material3 theme
 ├── data/
-│   ├── VoiceNote.kt           # Data entity
+│   ├── VoiceNote.kt           # Data entity with audio file path
 │   ├── NoteDao.kt             # Room DAO
 │   └── NoteDatabase.kt        # Room database
 ├── viewmodel/
 │   └── NoteViewModel.kt       # ViewModel for notes
+├── service/
+│   └── VoiceRecordingService.kt  # Foreground service for recording
 └── widget/
-    └── VoiceNoteWidget.kt     # Home screen widget
+    └── VoiceNoteWidget.kt     # Home screen widget with recording
 ```
 
 ### Building the Project
@@ -146,20 +157,45 @@ gradlew.bat installDebug
 
 ## 🚀 Usage
 
-1. **Recording a Note**:
-   - Tap the red microphone button
+### In-App Recording
+
+1. **Single Tap Recording** (Voice Activity Detection):
+   - Tap the red microphone button once
    - Grant microphone permission if prompted
    - Speak your note
-   - The app will automatically convert your speech to text
+   - Recording automatically stops when silence is detected (~1.5 seconds)
+   - Speech is converted to text and saved
 
-2. **Completing a Note**:
+2. **Long Press Recording** (Hold Mode):
+   - Long-press the red microphone button
+   - Keep holding while speaking
+   - Release the button when done
+   - Speech is converted to text and saved
+
+### Widget Recording
+
+1. **Adding the Widget**:
+   - Long-press on your home screen
+   - Tap "Widgets"
+   - Find and add the "Voice Note Widget"
+   - You'll see a circular red button with a white microphone icon
+
+2. **Recording with Widget**:
+   - Tap the widget button on your home screen
+   - Grant microphone permission if prompted
+   - Speak your note (no need to open the app)
+   - Recording automatically stops when silence is detected
+   - Note is saved and appears in the app
+
+### Managing Notes
+
+1. **Viewing Notes**:
+   - Open the app to see all your saved notes
+   - Each note shows the transcribed text and timestamp
+
+2. **Completing Notes**:
    - Tap the checkmark button on any note
    - The note will fade out and be removed
-
-3. **Using the Widget**:
-   - Long-press on your home screen
-   - Add the "Voice Note Widget"
-   - Tap the widget to quickly open the app
 
 ## 📱 Screenshots
 
@@ -169,6 +205,8 @@ _Screenshots coming soon_
 
 - **RECORD_AUDIO**: Required for voice recording and speech recognition
 - **INTERNET**: Required for speech recognition service (Google's cloud service)
+- **FOREGROUND_SERVICE**: Required for background recording from widget
+- **POST_NOTIFICATIONS**: Required for showing recording notification (Android 13+)
 
 ## 🤝 Contributing
 

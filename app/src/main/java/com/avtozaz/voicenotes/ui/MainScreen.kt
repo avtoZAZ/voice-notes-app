@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,6 +39,8 @@ import java.util.*
 fun MainScreen(
     notes: List<VoiceNote>,
     onRecordClick: () -> Unit,
+    onRecordLongPress: () -> Unit,
+    onRecordRelease: () -> Unit,
     onCompleteNote: (VoiceNote) -> Unit,
     isRecording: Boolean
 ) {
@@ -45,7 +49,9 @@ fun MainScreen(
         floatingActionButton = {
             RecordButton(
                 isRecording = isRecording,
-                onClick = onRecordClick
+                onClick = onRecordClick,
+                onLongPress = onRecordLongPress,
+                onRelease = onRecordRelease
             )
         }
     ) { paddingValues ->
@@ -168,7 +174,9 @@ fun NoteCard(
 @Composable
 fun RecordButton(
     isRecording: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongPress: () -> Unit,
+    onRelease: () -> Unit
 ) {
     val scale by if (isRecording) {
         val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -184,20 +192,42 @@ fun RecordButton(
     } else {
         remember { mutableStateOf(1f) }
     }
+    
+    var isPressed by remember { mutableStateOf(false) }
 
-    FloatingActionButton(
-        onClick = onClick,
-        containerColor = NothingRed,
-        contentColor = NothingWhite,
+    Box(
         modifier = Modifier
             .scale(scale)
             .size(64.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { onClick() },
+                    onLongPress = { 
+                        isPressed = true
+                        onLongPress() 
+                    },
+                    onPress = {
+                        val pressed = tryAwaitRelease()
+                        if (pressed && isPressed) {
+                            isPressed = false
+                            onRelease()
+                        }
+                    }
+                )
+            }
     ) {
-        Icon(
-            imageVector = Icons.Default.Mic,
-            contentDescription = "Record",
-            modifier = Modifier.size(32.dp)
-        )
+        FloatingActionButton(
+            onClick = { /* Handled by pointerInput */ },
+            containerColor = NothingRed,
+            contentColor = NothingWhite,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Icon(
+                imageVector = Icons.Default.Mic,
+                contentDescription = "Record",
+                modifier = Modifier.size(32.dp)
+            )
+        }
     }
 }
 
